@@ -51,6 +51,16 @@ jobs:
           echo "black_reflection_path=$BLACK_REFLECTION_ART" >> $GITHUB_OUTPUT
           echo "compiler_path=$COMPILER_ART" >> $GITHUB_OUTPUT
 
+      - name: Upload APKs as GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-apks
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
+          retention-days: 7
+
       - name: Send Bcore Debug AAR to Telegram and Pin
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%s)
