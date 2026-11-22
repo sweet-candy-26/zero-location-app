@@ -76,7 +76,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     @SuppressLint("HardwareIds")
-    private fun getDeviceId(): String {
+    private fun getAndroidDeviceId(): String {
         return try {
             Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "UNKNOWN_DEVICE_ID"
         } catch (e: Exception) {
@@ -88,7 +88,7 @@ class LoginActivity : AppCompatActivity() {
     private fun verifyLicenseKey(licenseKey: String) {
         setLoadingState(true)
 
-        val deviceId = getDeviceId()
+        val deviceId = getAndroidDeviceId()
 
         // JSON payload format: {"key": "ENTERED_KEY", "device_id": "ANDROID_ID"}
         val jsonPayload = JSONObject().apply {
