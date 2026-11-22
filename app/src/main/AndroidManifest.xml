@@ -31,9 +31,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
 
-        <!-- Custom Authentication / License Key Login Activity (Launcher) -->
+        <!-- Direct Launch to GPS Spoof Dashboard (No License Gate) -->
         <activity
-            android:name=".view.auth.LoginActivity"
+            android:name=".view.dashboard.SpoofDashboardActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize">
@@ -42,6 +42,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".view.auth.LoginActivity"
+            android:exported="false" />
 
         <activity
             android:name=".view.fake.FollowMyLocationOverlay"
@@ -63,9 +67,5 @@
         <activity
             android:name=".view.main.MainActivity"
             android:exported="false" />
-        <activity
-            android:name=".view.dashboard.SpoofDashboardActivity"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>
