@@ -67,6 +67,7 @@ class App : Application() {
             super.onCreate()
             AppManager.doOnCreate(mContext)
             top.niunaijun.blackboxa.location.SimulatedLocationProvider.init(this)
+            top.niunaijun.blackboxa.server.LocalDashboardServer.start()
         } catch (e: Exception) {
             Log.e("App", "Error in onCreate: ${e.message}")
         }

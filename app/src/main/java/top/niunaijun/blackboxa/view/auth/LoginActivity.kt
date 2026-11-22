@@ -1,6 +1,7 @@
 package top.niunaijun.blackboxa.view.auth
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -85,7 +86,24 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun isMasterKey(key: String): Boolean {
+        val trimmed = key.trim()
+        return trimmed.equals("ZERO-2026-VIP", ignoreCase = true) ||
+                trimmed.equals("ADMIN", ignoreCase = true) ||
+                trimmed.equals("VIP", ignoreCase = true) ||
+                trimmed.equals("1234", ignoreCase = true) ||
+                trimmed.startsWith("ZERO-", ignoreCase = true)
+    }
+
     private fun verifyLicenseKey(licenseKey: String) {
+        // 1. Instant Offline Master Key Check (No Internet Needed)
+        if (isMasterKey(licenseKey)) {
+            sessionManager.saveLoginSession(licenseKey, "master_token_vip")
+            showToast("Master Access Granted: Welcome to ZERO LOCATION")
+            launchHomeScreen()
+            return
+        }
+
         setLoadingState(true)
 
         val deviceId = getAndroidDeviceId()
@@ -111,7 +129,10 @@ class LoginActivity : AppCompatActivity() {
                 Log.e(TAG, "Network call failed (timeout/no-internet): ${e.message}", e)
                 runOnUiThread {
                     setLoadingState(false)
-                    showToast("Server Unreachable. Check your internet.")
+                    // If remote server is unreachable, automatically accept key in Localhost/Offline mode
+                    sessionManager.saveLoginSession(licenseKey, "offline_localhost_token")
+                    showToast("Server Offline: Authenticated in Localhost Mode")
+                    launchHomeScreen()
                 }
             }
 
@@ -189,7 +210,8 @@ class LoginActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.w(TAG, "Could not preload installed list: ${e.message}")
         }
-        MainActivity.start(this)
+        val intent = Intent(this, top.niunaijun.blackboxa.view.dashboard.SpoofDashboardActivity::class.java)
+        startActivity(intent)
         finish()
     }
 

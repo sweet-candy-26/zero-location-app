@@ -202,4 +202,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnSetLocation" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOpenLocalhost"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="#00FF66"
+        android:text="Open Localhost Dashboard (Browser)"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:cornerRadius="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnStartRoute" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOpenVirtualApps"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="#1E293B"
+        android:text="Open Virtual Apps (BlackBox VM)"
+        android:textAllCaps="false"
+        android:textColor="#94A3B8"
+        android:textSize="13sp"
+        app:cornerRadius="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnOpenLocalhost" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

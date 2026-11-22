@@ -22,3 +22,4 @@
 .cxx
 local.properties
 /app/release/
+/build_output_apks/

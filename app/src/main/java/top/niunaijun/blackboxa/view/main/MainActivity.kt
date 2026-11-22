@@ -402,6 +402,10 @@ class MainActivity : LoadingActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         try {
             when (item.itemId) {
+                R.id.menu_spoof_dashboard -> {
+                    val intent = Intent(this, top.niunaijun.blackboxa.view.dashboard.SpoofDashboardActivity::class.java)
+                    startActivity(intent)
+                }
                 R.id.main_git -> {
                     val intent =
                             Intent(

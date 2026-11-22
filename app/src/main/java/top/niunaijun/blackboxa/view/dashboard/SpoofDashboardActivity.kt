@@ -99,6 +99,22 @@ class SpoofDashboardActivity : AppCompatActivity() {
                 Toast.makeText(this, "Route simulation started (30 km/h, 5m accuracy)", Toast.LENGTH_SHORT).show()
             }
         }
+
+        binding.btnOpenLocalhost.setOnClickListener {
+            try {
+                val browserIntent = android.content.Intent(
+                    android.content.Intent.ACTION_VIEW,
+                    android.net.Uri.parse("http://127.0.0.1:8080")
+                )
+                startActivity(browserIntent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Browser error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.btnOpenVirtualApps.setOnClickListener {
+            top.niunaijun.blackboxa.view.main.MainActivity.start(this)
+        }
     }
 
     private fun updateDashboardUI(location: Location) {
