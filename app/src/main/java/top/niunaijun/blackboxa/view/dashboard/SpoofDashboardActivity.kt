@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import top.niunaijun.blackboxa.databinding.ActivitySpoofDashboardBinding
 import top.niunaijun.blackboxa.location.SimulatedLocationProvider
+import top.niunaijun.blackboxa.util.inflate
 
 /**
  * Dashboard UI for controlling hardware GPS simulation.
@@ -15,7 +16,7 @@ import top.niunaijun.blackboxa.location.SimulatedLocationProvider
  */
 class SpoofDashboardActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivitySpoofDashboardBinding
+    private val binding: ActivitySpoofDashboardBinding by inflate()
 
     private val locationUpdateCallback: (Location) -> Unit = { location ->
         runOnUiThread {
@@ -25,7 +26,6 @@ class SpoofDashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySpoofDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initViews()
@@ -43,7 +43,6 @@ class SpoofDashboardActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        // Display existing simulated location if active
         val lastLoc = SimulatedLocationProvider.getLastKnownLocation()
         if (lastLoc != null) {
             updateDashboardUI(lastLoc)
@@ -87,7 +86,6 @@ class SpoofDashboardActivity : AppCompatActivity() {
                 updateRouteButtonState(false)
                 Toast.makeText(this, "Route simulation stopped", Toast.LENGTH_SHORT).show()
             } else {
-                // Generate a loop route around starting coordinate (distance ~ 1-2 km)
                 val routeWaypoints = listOf(
                     Pair(lat, lng),
                     Pair(lat + 0.0035, lng + 0.0025),
