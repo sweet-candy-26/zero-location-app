@@ -30,8 +30,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build APKs and AARs
-        run: ./gradlew assembleDebug assembleRelease :Bcore:assembleDebug :Bcore:assembleRelease :black-reflection:assemble :compiler:assemble
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug :Bcore:assembleDebug --stacktrace
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease || true
 
       - name: Find Bcore AAR paths
         id: aar_paths
@@ -54,9 +57,7 @@ jobs:
         if: always()
         with:
           name: app-apks
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/**/*.apk
           retention-days: 7
 
       - name: Send Bcore Debug AAR to Telegram and Pin

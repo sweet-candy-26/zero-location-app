@@ -6,13 +6,17 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
-import kotlinx.coroutines.*
 import top.niunaijun.blackbox.BlackBoxCore
 import top.niunaijun.blackbox.entity.location.BLocation
 import top.niunaijun.blackbox.fake.frameworks.BLocationManager
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.math.*
 
 /**
@@ -38,8 +42,8 @@ object SimulatedLocationProvider {
     @Volatile
     private var currentSimulatedLocation: Location? = null
 
-    private var routeJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var scheduler: ScheduledExecutorService? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val locationListeners = CopyOnWriteArrayList<(Location) -> Unit>()
 
@@ -108,9 +112,12 @@ object SimulatedLocationProvider {
             elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                speedAccuracyMetersPerSecond = 0.5f
-                bearingAccuracyDegrees = 1.0f
-                verticalAccuracyMeters = 1.0f
+                try {
+                    setSpeedAccuracyMetersPerSecond(0.5f)
+                    setBearingAccuracyDegrees(1.0f)
+                    setVerticalAccuracyMeters(1.0f)
+                } catch (ignored: Throwable) {
+                }
             }
 
             val extrasBundle = Bundle().apply {
@@ -148,9 +155,14 @@ object SimulatedLocationProvider {
 
             // Apply global mode to all virtual packages installed in user 0
             val installedApps = BlackBoxCore.get().getInstalledApplications(0, 0)
-            for (appInfo in installedApps) {
-                bm.setPattern(0, appInfo.packageName, BLocationManager.GLOBAL_MODE)
-                bm.setLocation(0, appInfo.packageName, bLocation)
+            if (installedApps != null) {
+                for (appInfo in installedApps) {
+                    val pkg = appInfo?.packageName
+                    if (!pkg.isNullOrEmpty()) {
+                        bm.setPattern(0, pkg, BLocationManager.GLOBAL_MODE)
+                        bm.setLocation(0, pkg, bLocation)
+                    }
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error injecting location into BlackBox: ${e.message}")
@@ -166,7 +178,6 @@ object SimulatedLocationProvider {
         try {
             lm.setTestProviderLocation(LocationManager.GPS_PROVIDER, location)
         } catch (e: Exception) {
-            // Log fallback when test provider permission isn't available
             Log.v(TAG, "setTestProviderLocation notice: ${e.message}")
         }
     }
@@ -185,15 +196,18 @@ object SimulatedLocationProvider {
             return
         }
 
-        routeJob = scope.launch {
-            var currentWaypointIndex = 0
-            var currentLat = waypoints[0].first
-            var currentLng = waypoints[0].second
+        var currentWaypointIndex = 0
+        var currentLat = waypoints[0].first
+        var currentLng = waypoints[0].second
 
-            setLocation(currentLat, currentLng, speed = SPEED_MPS.toFloat(), bearing = 0.0f)
+        setLocation(currentLat, currentLng, speed = SPEED_MPS.toFloat(), bearing = 0.0f)
 
-            while (isActive && currentWaypointIndex < waypoints.size - 1) {
-                delay(UPDATE_INTERVAL_MS)
+        val exec = Executors.newSingleThreadScheduledExecutor()
+        scheduler = exec
+
+        exec.scheduleWithFixedDelay({
+            try {
+                if (exec.isShutdown) return@scheduleWithFixedDelay
 
                 val target = waypoints[currentWaypointIndex + 1]
                 val targetLat = target.first
@@ -207,7 +221,6 @@ object SimulatedLocationProvider {
                     currentLng = targetLng
                     currentWaypointIndex++
 
-                    // If end reached, wrap to 0 for continuous simulation loop
                     if (currentWaypointIndex >= waypoints.size - 1) {
                         currentWaypointIndex = 0
                     }
@@ -222,14 +235,19 @@ object SimulatedLocationProvider {
                     currentLng = nextPoint.second
                 }
 
-                setLocation(
-                    lat = currentLat,
-                    lng = currentLng,
-                    speed = SPEED_MPS.toFloat(),
-                    bearing = bearing
-                )
+                mainHandler.post {
+                    setLocation(
+                        lat = currentLat,
+                        lng = currentLng,
+                        speed = SPEED_MPS.toFloat(),
+                        bearing = bearing
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Route update error: ${e.message}")
             }
-        }
+        }, UPDATE_INTERVAL_MS, UPDATE_INTERVAL_MS, TimeUnit.MILLISECONDS)
+
         Log.d(TAG, "Route simulation started with ${waypoints.size} waypoints at 30 km/h")
     }
 
@@ -237,10 +255,12 @@ object SimulatedLocationProvider {
      * Stops any currently executing route simulation.
      */
     fun stopRoute() {
-        routeJob?.cancel()
-        routeJob = null
+        try {
+            scheduler?.shutdownNow()
+            scheduler = null
+        } catch (ignored: Exception) {
+        }
 
-        // Reset speed to 0 at current location
         currentSimulatedLocation?.let { loc ->
             setLocation(loc.latitude, loc.longitude, speed = 0.0f, bearing = loc.bearing)
         }
@@ -251,7 +271,7 @@ object SimulatedLocationProvider {
      * Check if a route simulation is actively running.
      */
     fun isRouteRunning(): Boolean {
-        return routeJob?.isActive == true
+        return scheduler != null && !scheduler!!.isShutdown
     }
 
     /**
