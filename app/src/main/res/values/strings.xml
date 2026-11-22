@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BlackBox</string>
+    <string name="app_name">ZERO LOCATION</string>
     <string name="choose">Choose</string>
     <string name="choose_app">Choose App</string>
     <string name="installed_app">Installed App</string>
@@ -67,4 +67,15 @@
     <string name="disable_gms">Disable Service</string>
     <string name="disable_gms_hint">Clear the current Google service environment? Google service data will be cleared.</string>
     <string name="no_gms">Currently, there is no Google service environment on mobile phones.</string>
+
+    <!-- ZERO LOCATION Authentication & Key System -->
+    <string name="login_title">ZERO LOCATION</string>
+    <string name="login_subtitle">Premium Location Spoofer</string>
+    <string name="license_key_hint">ENTER ACCESS KEY</string>
+    <string name="btn_login">AUTHENTICATE</string>
+    <string name="toast_welcome">Welcome to ZERO LOCATION</string>
+    <string name="toast_invalid_key">Invalid or expired key</string>
+    <string name="toast_server_unreachable">Server Unreachable. Check your internet.</string>
+    <string name="toast_empty_key">Please enter a license key</string>
+    <string name="verifying_key">Connecting to secure gateway...</string>
 </resources>

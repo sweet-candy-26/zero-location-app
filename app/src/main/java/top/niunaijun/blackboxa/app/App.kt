@@ -66,6 +66,7 @@ class App : Application() {
         try {
             super.onCreate()
             AppManager.doOnCreate(mContext)
+            top.niunaijun.blackboxa.location.SimulatedLocationProvider.init(this)
         } catch (e: Exception) {
             Log.e("App", "Error in onCreate: ${e.message}")
         }
